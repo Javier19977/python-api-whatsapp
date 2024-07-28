@@ -1,18 +1,15 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enviar Mensajes</title>
+    <title>Subir Archivo</title>
 </head>
 <body>
     <h1>Subir Archivo Excel</h1>
     <form action="/upload" method="post" enctype="multipart/form-data">
-        <label for="file">Selecciona el archivo Excel:</label>
-        <input type="file" id="file" name="file" accept=".xlsx">
-        <button type="submit">Subir</button>
+        <input type="file" name="file" accept=".xlsx">
+        <input type="submit" value="Subir">
     </form>
 </body>
 </html>
-
-

@@ -8,7 +8,7 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app)
 
-WHATSAPP_API_URL = 'https://tu-api-de-whatsapp-en-render.com/lead'  # Cambia esta URL por la correcta
+WHATSAPP_API_URL = 'https://tu-api-de-whatsapp-en-render.com/lead'  # Asegúrate de usar la URL correcta
 
 @app.route('/')
 def index():
@@ -61,28 +61,9 @@ def upload_file():
 
             return jsonify({'message': 'Archivo procesado exitosamente'}), 200
         except Exception as e:
-            return jsonify({'error': f'Error al procesar el archivo: {str(e)}'}), 500
+            return jsonify({'error': str(e)}), 500
     else:
-        return jsonify({'error': 'Formato de archivo no válido'}), 400
-
-@app.route('/lead', methods=['POST'])
-def lead():
-    try:
-        data = request.json
-        message = data.get('message')
-        phone = data.get('phone')
-
-        if not message or not phone:
-            return jsonify({'error': 'Faltan datos'}), 400
-
-        response = requests.post(WHATSAPP_API_URL, json={'message': message, 'phone': phone})
-
-        if response.status_code == 200:
-            return jsonify({'success': 'Mensaje enviado con éxito'}), 200
-        else:
-            return jsonify({'error': f'Error en la solicitud: {response.status_code}'}), response.status_code
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'Invalid file format'}), 400
 
 def send_message(para, mensaje):
     data = {
