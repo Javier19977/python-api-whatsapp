@@ -1,3 +1,5 @@
+# backend/app.py
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import openpyxl
@@ -15,7 +17,6 @@ def send_message():
     if not message or not phone:
         return jsonify({"status": "error", "message": "Faltan parámetros 'message' o 'phone'."}), 400
 
-    # Aquí va tu lógica para enviar el mensaje utilizando la API de WhatsApp
     url = "http://localhost:3004/lead"
     payload = {
         "message": message,
@@ -53,7 +54,6 @@ def upload_file():
             if not phone or not message:
                 continue
 
-            # Aquí va tu lógica para enviar el mensaje utilizando la API de WhatsApp
             url = "http://localhost:3004/lead"
             payload = {
                 "message": message,
