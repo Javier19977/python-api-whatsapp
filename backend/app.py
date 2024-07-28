@@ -1,6 +1,6 @@
-import time
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, send_from_directory
 import pandas as pd
+import os
 import requests
 from flask_cors import CORS
 from datetime import datetime
@@ -8,12 +8,11 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app)
 
-# URL correcta de tu API de WhatsApp en Render
-WHATSAPP_API_URL = 'https://python-api-whatsapp-backend.onrender.com/lead'
+WHATSAPP_API_URL = 'https://python-api-whatsapp-backend.onrender.com/lead'  # URL de tu API de WhatsApp en Render
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return send_from_directory('.', 'index.html')  # Enviar el archivo index.html desde la raíz
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
