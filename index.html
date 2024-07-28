@@ -1,42 +1,16 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enviar Mensajes Personalizados</title>
+    <title>Subir Archivo</title>
 </head>
 <body>
-    <h1>Enviar Mensajes Personalizados</h1>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <label for="excelFile">Selecciona el archivo Excel:</label>
-        <input type="file" id="excelFile" name="file" accept=".xlsx">
-        <button type="submit">Enviar</button>
+    <h1>Subir Archivo Excel</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".xlsx" required>
+        <input type="submit" value="Subir Archivo">
     </form>
-    <div id="response"></div>
-
-    <script>
-        document.getElementById('uploadForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            var formData = new FormData();
-            var fileInput = document.getElementById('excelFile');
-            formData.append('file', fileInput.files[0]);
-
-            fetch('https://python-api-whatsapp-backend.onrender.com/upload', {  // Asegúrate de usar la URL correcta
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    document.getElementById("response").innerText = "Error: " + data.error;
-                } else {
-                    document.getElementById("response").innerText = data.message;
-                }
-            })
-            .catch(error => {
-                document.getElementById("response").innerText = "Error: " + error;
-            });
-        });
-    </script>
 </body>
 </html>
+

@@ -1,7 +1,6 @@
 import time
 from flask import Flask, request, jsonify, render_template
 import pandas as pd
-import os
 import requests
 from flask_cors import CORS
 from datetime import datetime
@@ -9,7 +8,8 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app)
 
-WHATSAPP_API_URL = 'https://tu-api-de-whatsapp-en-render.com/lead'  # URL de tu API de WhatsApp en Render
+# URL de la API de WhatsApp en Render
+WHATSAPP_API_URL = 'https://python-api-whatsapp-backend.onrender.com/lead'
 
 @app.route('/')
 def index():
@@ -62,9 +62,9 @@ def upload_file():
 
             return jsonify({'message': 'Archivo procesado exitosamente'}), 200
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            return jsonify({'error': f'Error al procesar el archivo: {str(e)}'}), 500
     else:
-        return jsonify({'error': 'Invalid file format'}), 400
+        return jsonify({'error': 'Formato de archivo no válido'}), 400
 
 def send_message(para, mensaje):
     data = {
