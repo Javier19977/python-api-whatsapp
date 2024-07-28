@@ -61,24 +61,40 @@ def index():
 @app.route('/upload', methods=['POST'])
 def upload_file():
     try:
+        print("Recibida solicitud de subida de archivo")
+        
         if 'file' not in request.files:
-            return jsonify({'error': 'No file part'}), 400
+            error_message = 'No file part in the request'
+            print(error_message)
+            return jsonify({'error': error_message}), 400
         
         file = request.files['file']
         if file.filename == '':
-            return jsonify({'error': 'No selected file'}), 400
+            error_message = 'No file selected'
+            print(error_message)
+            return jsonify({'error': error_message}), 400
         
         if file and file.filename.endswith('.xlsx'):
-            df = pd.read_excel(file)
-            # Aquí puedes agregar la lógica para procesar el archivo y enviar mensajes
-            return jsonify({'message': 'Archivo procesado exitosamente'}), 200
+            print(f"Archivo recibido: {file.filename}")
+            
+            try:
+                df = pd.read_excel(file)
+                print("Archivo Excel leído exitosamente")
+                
+                # Aquí puedes agregar la lógica para procesar el archivo y enviar mensajes
+                return jsonify({'message': 'Archivo procesado exitosamente'}), 200
+            except Exception as e:
+                error_message = f"Error al leer el archivo Excel: {str(e)}"
+                print(error_message)
+                return jsonify({'error': error_message}), 500
         else:
-            return jsonify({'error': 'Invalid file format'}), 400
+            error_message = 'Invalid file format'
+            print(error_message)
+            return jsonify({'error': error_message}), 400
     except Exception as e:
-        # Imprimir el error en los logs y devolver el mensaje de error en la respuesta JSON
-        error_message = f"Error: {str(e)}"
+        error_message = f"Error desconocido: {str(e)}"
         print(error_message)
         return jsonify({'error': error_message}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
