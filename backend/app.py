@@ -1,134 +1,79 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import requests
-import time
-import os
 import openpyxl
-from datetime import datetime
-from werkzeug.utils import secure_filename
+import requests
 
 app = Flask(__name__)
 CORS(app)
 
-UPLOAD_FOLDER = 'uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB
+@app.route('/lead', methods=['POST'])
+def send_message():
+    data = request.get_json()
+    message = data.get('message')
+    phone = data.get('phone')
 
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+    if not message or not phone:
+        return jsonify({"status": "error", "message": "Faltan parámetros 'message' o 'phone'."}), 400
 
-def obtener_fecha_hora_actual():
-    """Obtiene la fecha y hora actual en formato legible."""
-    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-def sendMessage(para, mensaje):
-    url = 'http://localhost:3001/lead'  # URL de tu servidor local para la API de WhatsApp
-    data = {
-        "message": mensaje,
-        "phone": para
+    # Aquí va tu lógica para enviar el mensaje utilizando la API de WhatsApp
+    url = "http://localhost:3004/lead"
+    payload = {
+        "message": message,
+        "phone": phone
     }
     headers = {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json"
     }
 
-    max_intentos = 3
-    intentos = 0
-    mensaje_enviado = False
-
-    while intentos < max_intentos:
-        intentos += 1
-        if intentos > 1:
-            print(f"🔄 Reintentando... ({intentos}/{max_intentos})")
-        else:
-            print(f"📤 [{obtener_fecha_hora_actual()}] Enviando mensaje a {para}...")
-
-        try:
-            response = requests.post(url, json=data, headers=headers, timeout=10)
-            response.raise_for_status()  # Lanza una excepción para errores HTTP
-
-            if response.status_code == 404:
-                print(f"🔍 [{obtener_fecha_hora_actual()}] El número {para} no tiene WhatsApp. Pasando al siguiente número.")
-                return False  # Indicar que no se pudo enviar el mensaje
-            else:
-                print(f"✅ [{obtener_fecha_hora_actual()}] Mensaje enviado con éxito a {para}.")
-                mensaje_enviado = True
-                break  # Salir del bucle si el mensaje fue enviado con éxito
-
-        except requests.exceptions.Timeout:
-            if intentos == max_intentos:
-                # Mensaje final después de todos los intentos fallidos
-                print(f"❌ [{obtener_fecha_hora_actual()}] El mensaje a {para} no pudo ser enviado después de {max_intentos} intentos. El número de teléfono no posee WhatsApp.")
-            else:
-                print(f"🔄 Reintentando... ({intentos}/{max_intentos})")
-            time.sleep(5)  # Esperar antes de reintentar
-        except requests.exceptions.RequestException as req_err:
-            print(f"🚨 [{obtener_fecha_hora_actual()}] Error de solicitud al enviar mensaje a {para}: {req_err}")
-            break  # No continuar intentando en caso de otros errores de solicitud
-        except Exception as e:
-            print(f"⚠️ [{obtener_fecha_hora_actual()}] Error inesperado al enviar mensaje a {para}: {e}")
-            break  # No continuar intentando en caso de errores inesperados
-
-    return mensaje_enviado  # Indicar si el mensaje fue enviado con éxito o no
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+        return jsonify({"status": "success", "message": "Mensaje enviado con éxito."}), 200
+    except requests.exceptions.RequestException as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
+        return jsonify({"status": "error", "message": "No se ha enviado ningún archivo."}), 400
 
     file = request.files['file']
     if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
+        return jsonify({"status": "error", "message": "El nombre del archivo está vacío."}), 400
 
-    filename = secure_filename(file.filename)
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file.save(file_path)
-
-    # Leer el archivo Excel
     try:
-        wb = openpyxl.load_workbook(file_path)
+        wb = openpyxl.load_workbook(file)
         sheet = wb.active
-        has_invalid_data = False
+        messages_sent = []
 
-        # Iterar sobre las filas del archivo Excel
-        for idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
-            numero = str(row[0]).strip().replace('-', '') if row[0] else ''
-            numero_ticket = str(row[1]).strip() if row[1] else ''
-            nombre_tecnico = str(row[2]).strip() if row[2] else ''
-            nombre_estudiante = str(row[3]).strip() if row[3] else ''
-            falla_reportada = str(row[4]).strip() if row[4] else ''
-            nie = str(row[5]).strip() if row[5] else ''
-            serie = str(row[6]).strip() if row[6] else ''
+        for row in sheet.iter_rows(min_row=2, values_only=True):
+            phone = row[0]
+            message = row[1]
 
-            # Verificar que no haya valores vacíos
-            if not all([numero, numero_ticket, nombre_estudiante, nombre_tecnico, falla_reportada, nie, serie]):
-                has_invalid_data = True
-                continue  # Omitir esta fila
+            if not phone or not message:
+                continue
 
-            # Agregar el prefijo del país si no está presente
-            if len(numero) == 8:  # Asumiendo que los números sin prefijo tienen 8 dígitos
-                numero = '503' + numero
+            # Aquí va tu lógica para enviar el mensaje utilizando la API de WhatsApp
+            url = "http://localhost:3004/lead"
+            payload = {
+                "message": message,
+                "phone": phone
+            }
+            headers = {
+                "Content-Type": "application/json"
+            }
 
-            mensaje = (
-               f"🛠️ *Atención de soporte* - Ticket *{numero_ticket}*\n"
-                f"\n📋 Datos del ESTUDIANTE: *{nombre_estudiante}* - NIE: *{nie}*\n"
-                f"\n🔧 El equipo se recibió con la siguiente falla: *{falla_reportada}*. Serie del equipo: *{serie}*.\n"
-                f"\n📦 Ya está listo para ser recogido en nuestra sede de Soporte Técnico en Santa Ana.\n"
-                f"\n📲 Por favor, asegúrate de traer este mensaje y tu DUI al llegar para agilizar el proceso.\n"
-                f"\n🔌 Recuerda traer el cargador del equipo, a menos que ya lo hayas entregado al técnico.\n"
-                f"\n⏰ *Horario de atención*: Lunes a Viernes, de 7:30 am a 12:00 pm y de 1:00 pm a 3:30 pm.\n"
-                f"\n🛠️ El equipo estará disponible para ser retirado por un plazo de *15 días hábiles* a partir de esta notificación. Posteriormente, será trasladado a nuestra bodega para atender otros casos, por lo que te recomendamos recogerlo lo antes posible para evitar inconvenientes.\n"
-                f"\n📍 *Dirección*: Estamos ubicados a solo una cuadra del ISSS Santa Ana, en la Avenida California, colonia El Palmar, dentro de CE INSA Industrial. [Ver ubicación](https://maps.app.goo.gl/9G4GNo8RE63VKH6r6)\n"
-                f"\n🧑‍🔧 Técnico a cargo: *{nombre_tecnico}*"
-            )
+            try:
+                response = requests.post(url, json=payload, headers=headers)
+                response.raise_for_status()
+                messages_sent.append({"phone": phone, "status": "success"})
+            except requests.exceptions.RequestException:
+                messages_sent.append({"phone": phone, "status": "error"})
 
-            sendMessage(numero, mensaje)
-            time.sleep(10)
-
-        return jsonify({"message": "Mensajes enviados con éxito"}), 200
+        return jsonify({"status": "success", "messages_sent": messages_sent}), 200
 
     except Exception as e:
-        return jsonify({"error": f"Error inesperado al procesar el archivo Excel: {e}"}), 500
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
+    app.run(host='0.0.0.0', port=5000)
