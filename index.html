@@ -1,48 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enviar Mensajes Personalizados</title>
+    <title>Enviar Mensajes</title>
 </head>
 <body>
-    <h1>Enviar Mensajes Personalizados</h1>
-    <form id="uploadForm">
-        <label for="fileInput">Selecciona el archivo Excel:</label>
-        <input type="file" id="fileInput" name="file">
-        <button type="submit">Enviar</button>
+    <h1>Subir Archivo Excel</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <label for="file">Selecciona el archivo Excel:</label>
+        <input type="file" id="file" name="file" accept=".xlsx">
+        <button type="submit">Subir</button>
     </form>
-    <div id="result"></div>
-
-    <script>
-        document.getElementById('uploadForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const fileInput = document.getElementById('fileInput');
-            if (!fileInput.files.length) {
-                alert('Por favor selecciona un archivo.');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-
-            try {
-                const response = await fetch('http://localhost:5000/upload', {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error en la solicitud: ' + response.statusText);
-                }
-
-                const result = await response.json();
-                document.getElementById('result').textContent = JSON.stringify(result, null, 2);
-            } catch (error) {
-                document.getElementById('result').textContent = 'Error: ' + error.message;
-            }
-        });
-    </script>
 </body>
 </html>
+
 
