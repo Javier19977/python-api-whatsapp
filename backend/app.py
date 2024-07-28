@@ -8,7 +8,8 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app)
 
-WHATSAPP_API_URL = 'https://tu-api-de-whatsapp-en-render.com/lead'  # Asegúrate de usar la URL correcta
+# URL correcta de tu API de WhatsApp en Render
+WHATSAPP_API_URL = 'https://python-api-whatsapp-backend.onrender.com/lead'
 
 @app.route('/')
 def index():
