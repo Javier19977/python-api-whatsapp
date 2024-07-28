@@ -38,8 +38,7 @@ def sendMessage(para, mensaje):
     while intentos < max_intentos:
         intentos += 1
         if intentos > 1:
-            sys.stdout.write(f"\r🔄 Reintentando... ({intentos}/{max_intentos})")
-            sys.stdout.flush()
+            print(f"🔄 Reintentando... ({intentos}/{max_intentos})")
         else:
             print(f"📤 [{obtener_fecha_hora_actual()}] Enviando mensaje a {para}...")
 
@@ -48,8 +47,7 @@ def sendMessage(para, mensaje):
             response.raise_for_status()  # Lanza una excepción para errores HTTP
 
             if response.status_code == 404:
-                sys.stdout.write(f"\r🔍 [{obtener_fecha_hora_actual()}] El número {para} no tiene WhatsApp. Pasando al siguiente número.\n")
-                sys.stdout.flush()
+                print(f"🔍 [{obtener_fecha_hora_actual()}] El número {para} no tiene WhatsApp. Pasando al siguiente número.")
                 return False  # Indicar que no se pudo enviar el mensaje
             else:
                 print(f"✅ [{obtener_fecha_hora_actual()}] Mensaje enviado con éxito a {para}.")
@@ -59,11 +57,9 @@ def sendMessage(para, mensaje):
         except requests.exceptions.Timeout:
             if intentos == max_intentos:
                 # Mensaje final después de todos los intentos fallidos
-                sys.stdout.write(f"\r❌ [{obtener_fecha_hora_actual()}] El mensaje a {para} no pudo ser enviado después de {max_intentos} intentos. El número de teléfono no posee WhatsApp.\n")
-                sys.stdout.flush()
+                print(f"❌ [{obtener_fecha_hora_actual()}] El mensaje a {para} no pudo ser enviado después de {max_intentos} intentos. El número de teléfono no posee WhatsApp.")
             else:
-                sys.stdout.write(f"\r🔄 Reintentando... ({intentos}/{max_intentos})")
-                sys.stdout.flush()
+                print(f"🔄 Reintentando... ({intentos}/{max_intentos})")
             time.sleep(5)  # Esperar antes de reintentar
         except requests.exceptions.RequestException as req_err:
             print(f"🚨 [{obtener_fecha_hora_actual()}] Error de solicitud al enviar mensaje a {para}: {req_err}")
@@ -135,3 +131,4 @@ def upload_file():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
