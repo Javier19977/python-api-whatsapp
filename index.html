@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,39 +7,43 @@
 </head>
 <body>
     <h1>Enviar Mensajes Personalizados</h1>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <label for="excelFile">Selecciona el archivo Excel:</label>
-        <input type="file" id="excelFile" name="file" accept=".xlsx">
+    <form id="uploadForm">
+        <label for="fileInput">Selecciona el archivo Excel:</label>
+        <input type="file" id="fileInput" name="file">
         <button type="submit">Enviar</button>
     </form>
-    <div id="response"></div>
+    <div id="result"></div>
 
     <script>
-        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+        document.getElementById('uploadForm').addEventListener('submit', async (event) => {
             event.preventDefault();
-            var formData = new FormData();
-            var fileInput = document.getElementById('excelFile');
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) {
+                alert('Por favor selecciona un archivo.');
+                return;
+            }
+
+            const formData = new FormData();
             formData.append('file', fileInput.files[0]);
 
-            fetch('https://python-api-whatsapp-backend.onrender.com/upload', {  // Actualiza con la URL correcta
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    document.getElementById("response").innerText = "Error: " + data.error;
-                } else {
-                    document.getElementById("response").innerText = data.message;
+            try {
+                const response = await fetch('https://python-api-whatsapp-backend.onrender.com/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error en la solicitud: ' + response.statusText);
                 }
-            })
-            .catch(error => {
-                document.getElementById("response").innerText = "Error: " + error;
-            });
+
+                const result = await response.json();
+                document.getElementById('result').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('result').textContent = 'Error: ' + error.message;
+            }
         });
     </script>
 </body>
 </html>
-
 
 
