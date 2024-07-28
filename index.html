@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,7 +21,7 @@
             var fileInput = document.getElementById('excelFile');
             formData.append('file', fileInput.files[0]);
 
-            fetch('https://tu-heroku-app.herokuapp.com/upload', {
+            fetch('https://tu-render-app-url.onrender.com/upload', {
                 method: 'POST',
                 body: formData
             })
@@ -40,3 +40,4 @@
     </script>
 </body>
 </html>
+
