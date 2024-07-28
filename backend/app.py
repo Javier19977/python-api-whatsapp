@@ -1,7 +1,10 @@
 from flask import Flask, request, jsonify, render_template
 import pandas as pd
+from flask_cors import CORS
+import os
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/')
 def index():
@@ -65,9 +68,13 @@ def upload_file():
         return jsonify({'error': 'No selected file'}), 400
     
     if file and file.filename.endswith('.xlsx'):
-        df = pd.read_excel(file)
-        # Aquí puedes agregar la lógica para procesar el archivo y enviar mensajes
-        return jsonify({'message': 'Archivo procesado exitosamente'}), 200
+        try:
+            df = pd.read_excel(file)
+            # Aquí puedes agregar la lógica para procesar el archivo y enviar mensajes
+            return jsonify({'message': 'Archivo procesado exitosamente'}), 200
+        except Exception as e:
+            print(f"Error processing file: {e}")
+            return jsonify({'error': 'Error processing file', 'details': str(e)}), 500
     else:
         return jsonify({'error': 'Invalid file format'}), 400
 
