@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 import pandas as pd
-from flask_cors import CORS
 import os
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
@@ -60,23 +60,25 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
-    
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-    
-    if file and file.filename.endswith('.xlsx'):
-        try:
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+        
+        if file and file.filename.endswith('.xlsx'):
             df = pd.read_excel(file)
             # Aquí puedes agregar la lógica para procesar el archivo y enviar mensajes
             return jsonify({'message': 'Archivo procesado exitosamente'}), 200
-        except Exception as e:
-            print(f"Error processing file: {e}")
-            return jsonify({'error': 'Error processing file', 'details': str(e)}), 500
-    else:
-        return jsonify({'error': 'Invalid file format'}), 400
+        else:
+            return jsonify({'error': 'Invalid file format'}), 400
+    except Exception as e:
+        # Imprimir el error en los logs y devolver el mensaje de error en la respuesta JSON
+        error_message = f"Error: {str(e)}"
+        print(error_message)
+        return jsonify({'error': error_message}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
