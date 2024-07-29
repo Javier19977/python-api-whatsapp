@@ -1,4 +1,4 @@
 Flask
 requests
+openpyxl>=3.0.7
 pandas>=3.1.0
-openpyxl>=3.1.0
